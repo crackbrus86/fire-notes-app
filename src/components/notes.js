@@ -9,6 +9,13 @@ class Notes extends React.Component{
         }
     }
 
+    handleRemove(noteId){   
+        if(window.confirm("Are you sure you want to delete this note?")){
+            const noteRef = firebase.database().ref(`/notes/${noteId}`);
+            noteRef.remove();
+        } 
+    }
+
     fetch(){
         const notesRef = firebase.database().ref('notes');
         notesRef.on('value', (snapshot) => {
@@ -27,22 +34,29 @@ class Notes extends React.Component{
         })
     }
 
-    getImage(url){
+    getImage(url, name){
         if(!url) return '';
-        return <img src={url} />
+        return <img className="card-img-top"  src={url} alt={name}/>
     }
 
     componentDidMount(){
         this.fetch();
     }
 
+    renderNoteTemplate(note, index){
+        return <div className="card" style={{width: "20rem"}} key={index}>
+        {this.getImage(note.url, note.fileName)}
+        <div className="card-block">
+          <h4 className="card-title">{note.name}</h4>
+          <p className="card-text">{note.content}</p>
+          <button className="btn btn-primary" onClick={() => this.props.onEdit(note)}>Edit</button>
+          <button className="btn btn-danger" onClick={() => this.handleRemove(note.id)}>Delete</button>
+        </div>
+      </div>
+    }
+
     render(){
-        var notes = (this.state.notes.length)?this.state.notes.map((note, index) => {
-        return <div className="note" key={index}>
-            <header>{note.name}</header>
-            <p>{note.content}</p>
-            {this.getImage(note.url)}
-        </div>} ):<div><p>No one note was created:(</p></div>;
+        var notes = (this.state.notes.length)?this.state.notes.map((note, index) => this.renderNoteTemplate(note, index)):<div><p>No one note was created:(</p></div>;
         return (<div>
             {notes}
         </div>)

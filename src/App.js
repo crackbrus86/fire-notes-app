@@ -7,32 +7,38 @@ class App extends Component {
   constructor(){
     super();
     this.state = {
-      dataSource: 'firebase'
+      dataSource: 'firebase',
+      currentNote: null
     }
     this.handleDataSource = this.handleDataSource.bind(this);
+    this.handleEditNote = this.handleEditNote.bind(this);
   }
 
   handleDataSource(sourse){
     this.setState({dataSource: sourse});
   }
 
+  handleEditNote(note){
+    this.setState({currentNote: note})
+  }
+
   render() {
     return (
-      <div className="app">
-        <header className="app-header">
-          <div className="display-logo">
-            <h1 className="app-title">Fire notes</h1>
+      <div className="container">
+        <header className="app-header row">
+          <div className="display-logo col col-md-8">
+            <h1>Fire notes</h1>
           </div>
-          <div className="app-settings">
+          <div className="app-settings col col-md-4">
             <Settings source={this.state.dataSource} selectSource={this.handleDataSource}   />
           </div>
         </header>
-        <div className="container">
-          <section className="display-notes">
-          <Notes />
+        <div className="row">
+          <section className="display-notes col col-md-8">
+          <Notes onEdit={this.handleEditNote} />
           </section>
-          <section className="add-notes">
-            <CreateNote />
+          <section className="add-notes col col-md-4">
+            <CreateNote current={this.state.currentNote} />
           </section>
         </div>
       </div>

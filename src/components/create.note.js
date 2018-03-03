@@ -5,14 +5,16 @@ class CreateNote extends React.Component{
     constructor(){
         super();
         this.state = {
+            id: null,
             name: '',
             content: '',
             fileName: '',
             url: ''
         }
         this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleSave = this.handleSave.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleClearForm = this.handleClearForm.bind(this);
     }
 
     handleChange(e){
@@ -26,41 +28,62 @@ class CreateNote extends React.Component{
         storeRef.put(file).then(snapshot => this.setState({url: snapshot.downloadURL}));
     }
 
-    handleSubmit(e){
-        e.preventDefault();
-        const notesRef = firebase.database().ref('notes');
+    handleSave(e){
         const note = {
             name: this.state.name,
             content: this.state.content,
             fileName: this.state.fileName,
             url: this.state.url
         }
-        notesRef.push(note);
+        if(this.state.id){
+            const notesRef = firebase.database().ref('notes').child(this.state.id).update(note);
+        }else{
+            const notesRef = firebase.database().ref('notes');
+            notesRef.push(note);
+        }
+        this.setDefaults();
+    }
+
+    handleClearForm(e){
+        this.setDefaults();
+    }
+    setDefaults(){
         this.setState({
+            id: null,
             name: '',
             content: '',
             fileName: '',
             url: ''
         });
-        e.target.reset();
+    }
+    componentWillReceiveProps(props){
+        if(props.current){
+            var note = props.current;
+            this.setState({
+                id: note.id,
+                name: note.name,
+                content: note.content,
+                fileName: note.fileName,
+                url: note.url
+            })
+        }
     }
     render(){
         return (<div>
-            <form onSubmit={this.handleSubmit}>
-                <div>
+            <form>
+                <div className="form-group">
                     <label>Name: </label>
-                    <input type="text" value={this.state.name} name="name" onChange={this.handleChange} />
+                    <input className="form-control" type="text" value={this.state.name} name="name" onChange={this.handleChange} />
                 </div>
-                <div>
-                <label>
-                    Content:
-                    <textarea value={this.state.content} name="content" onChange={this.handleChange} />
-                </label> 
+                <div className="form-group">
+                    <label>Content:</label> 
+                        <textarea className="form-control" value={this.state.content} name="content" onChange={this.handleChange} />
                 </div>
-                <div>
-                    <input type="file" onChange={this.handleFileChange}/>
+                <div className="form-group">
+                    <input className="form-control-file" type="file" onChange={this.handleFileChange}/>
                 </div>
-                <button>Save Note</button>
+                <button type="button" className="btn btn-primary" onClick={this.handleSave}>Save</button>
+                <button type="button" className="btn btn-secondary" onClick={this.handleClearForm}>Clear</button>
             </form>
         </div>)
     }
