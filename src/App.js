@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Settings} from "./components/settings";
 import CreateNote from "./components/create.note";
 import Notes from "./components/notes";
+import "./App.css";
 
 class App extends Component {
   constructor(){
@@ -24,17 +25,17 @@ class App extends Component {
 
   render() {
     return (
-      <div className="container">
-        <header className="app-header row">
-          <div className="display-logo col col-md-8">
-            <h1>Fire notes</h1>
+      <div className="container app">
+        <header className="app-header row justify-content-center">
+          <div className="display-logo col col-md-4">
+            <h1>Fire Notes</h1>
           </div>
           <div className="app-settings col col-md-4">
             <Settings source={this.state.dataSource} selectSource={this.handleDataSource}   />
           </div>
         </header>
-        <div className="row">
-          <section className="display-notes col col-md-8">
+        <div className="row  justify-content-center app-content">
+          <section className="display-notes col col-md-4">
           <Notes onEdit={this.handleEditNote} />
           </section>
           <section className="add-notes col col-md-4">

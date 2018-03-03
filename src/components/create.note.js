@@ -28,7 +28,7 @@ class CreateNote extends React.Component{
         storeRef.put(file).then(snapshot => this.setState({url: snapshot.downloadURL}));
     }
 
-    handleSave(e){
+    handleSave(){
         const note = {
             name: this.state.name,
             content: this.state.content,
@@ -44,9 +44,10 @@ class CreateNote extends React.Component{
         this.setDefaults();
     }
 
-    handleClearForm(e){
+    handleClearForm(){
         this.setDefaults();
     }
+
     setDefaults(){
         this.setState({
             id: null,
@@ -69,8 +70,9 @@ class CreateNote extends React.Component{
         }
     }
     render(){
-        return (<div>
+        return (<div>            
             <form>
+                <h3>Create a Fire Note!</h3>
                 <div className="form-group">
                     <label>Name: </label>
                     <input className="form-control" type="text" value={this.state.name} name="name" onChange={this.handleChange} />
@@ -83,7 +85,7 @@ class CreateNote extends React.Component{
                     <input className="form-control-file" type="file" onChange={this.handleFileChange}/>
                 </div>
                 <button type="button" className="btn btn-primary" onClick={this.handleSave}>Save</button>
-                <button type="button" className="btn btn-secondary" onClick={this.handleClearForm}>Clear</button>
+                <button type="button" className="btn btn-secondary" onClick={this.handleClearForm}>Cancel</button>
             </form>
         </div>)
     }
