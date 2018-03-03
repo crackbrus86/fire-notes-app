@@ -6,6 +6,7 @@
             color: orange;
             font-family: fantasy;
             font-size: 4em;
+            text-shadow: 2px 2px 1px #fff;
         }
     }
     .app-content{
@@ -21,12 +22,22 @@
                 h3{
                     text-align: center;
                     font-weight: 600;
-                    color: #a106bb;
+                    color: #ffa500;
+                    text-shadow: 0 1px 1px #000;
                 }
 
                 button{
                     margin-right: 10px;
                     cursor: pointer;
+                    &:disabled{
+                        cursor: not-allowed;
+                    }
+                }
+                input, textarea{
+                    &.invalid{
+                        border: 1px solid red;
+                        background-color: #fbdede;
+                    }
                 }
             }
         }
@@ -83,6 +94,25 @@
                                     font-size: 0.9em;
                                     text-align: right;
                                 }
+                            }
+                        }
+                    }
+                }
+                .add-comment{
+                    form{
+                        display: block;
+                        margin: 0px;
+                        background-color: white;
+                        padding: 5px;
+                        border: 1px solid #d6e5ff;
+                        h5{
+                            font-size: 1.1em;
+                        }
+                        .form-group{
+                            margin-bottom: 5px;
+                            label{
+                                font-size: 0.9em;
+                                line-height: 0.9em;
                             }
                         }
                     }

@@ -43,8 +43,9 @@ class CreateComment extends React.Component{
     }
 
     render(){
-        return <div>
+        return <div className="add-comment">
             <form>
+                <h5>Add your comment!</h5>
                 <div className="form-group">
                     <label>Author:</label>
                     <input type="text" className="form-control" name="author" value={this.state.author} onChange={this.handleChange} />

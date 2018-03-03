@@ -51,7 +51,7 @@ class Comments extends React.Component{
 
     render(){
         if(!this.state.show) return null;
-        var comments = (this.state.comments.length) ? this.state.comments.map((comment, index) => <li key={index}>{this.renderComment(comment)}</li>) : null;
+        var comments = (this.state.comments.length) ? this.state.comments.map((comment, index) => <li key={index}>{this.renderComment(comment)}</li>).reverse() : null;
         var commentsList = (comments)? <ul>{comments}</ul> : null;
         return <div className="comments-display">
             {commentsList}

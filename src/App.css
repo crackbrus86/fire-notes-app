@@ -4,7 +4,8 @@
   .app header h1 {
     color: orange;
     font-family: fantasy;
-    font-size: 4em; }
+    font-size: 4em;
+    text-shadow: 2px 2px 1px #fff; }
 
 .app .app-content {
   background-color: #fbfbfb; }
@@ -16,10 +17,16 @@
     .app .app-content .add-notes form h3 {
       text-align: center;
       font-weight: 600;
-      color: #a106bb; }
+      color: #ffa500;
+      text-shadow: 0 1px 1px #000; }
     .app .app-content .add-notes form button {
       margin-right: 10px;
       cursor: pointer; }
+      .app .app-content .add-notes form button:disabled {
+        cursor: not-allowed; }
+    .app .app-content .add-notes form input.invalid, .app .app-content .add-notes form textarea.invalid {
+      border: 1px solid red;
+      background-color: #fbdede; }
 
 .app .display-notes .note-template {
   margin: 10px; }
@@ -60,3 +67,16 @@
             color: #9e9e9e;
             font-size: 0.9em;
             text-align: right; }
+    .app .display-notes .note-template .comments-display .add-comment form {
+      display: block;
+      margin: 0px;
+      background-color: white;
+      padding: 5px;
+      border: 1px solid #d6e5ff; }
+      .app .display-notes .note-template .comments-display .add-comment form h5 {
+        font-size: 1.1em; }
+      .app .display-notes .note-template .comments-display .add-comment form .form-group {
+        margin-bottom: 5px; }
+        .app .display-notes .note-template .comments-display .add-comment form .form-group label {
+          font-size: 0.9em;
+          line-height: 0.9em; }
