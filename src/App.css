@@ -74,6 +74,7 @@
       padding: 5px;
       border: 1px solid #d6e5ff; }
       .app .display-notes .note-template .comments-display .add-comment form h5 {
+        margin-top: 10px;
         font-size: 1.1em; }
       .app .display-notes .note-template .comments-display .add-comment form .form-group {
         margin-bottom: 5px; }
