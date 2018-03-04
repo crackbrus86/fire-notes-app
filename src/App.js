@@ -16,7 +16,7 @@ class App extends Component {
   }
 
   handleDataSource(sourse){
-    this.setState({dataSource: sourse});
+    this.setState({dataSource: sourse, currentNote: null});
   }
 
   handleEditNote(note){
@@ -36,10 +36,10 @@ class App extends Component {
         </header>
         <div className="row  justify-content-center app-content">
           <section className="display-notes col col-md-4">
-          <Notes onEdit={this.handleEditNote} />
+          <Notes onEdit={this.handleEditNote} source={this.state.dataSource} current={this.state.currentNote} />
           </section>
           <section className="add-notes col col-md-4">
-            <CreateNote current={this.state.currentNote} />
+            <CreateNote current={this.state.currentNote} source={this.state.dataSource} clearCurrent={this.handleEditNote} />
           </section>
         </div>
       </div>

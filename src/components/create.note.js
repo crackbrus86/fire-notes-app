@@ -15,7 +15,8 @@ class CreateNote extends React.Component{
                 isValid: true,
                 reasons: []
             },
-            fileLoading: false
+            fileLoading: false,
+            dataSource: ''
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSave = this.handleSave.bind(this);
@@ -28,12 +29,28 @@ class CreateNote extends React.Component{
     }
 
     handleFileChange(e){
+        if(!e.target.files) return null;
         var file = e.target.files[0];
         this.setState({fileName: file.name});
         if(this.validateFile(file)){
-            this.setState({fileLoading: true});
-            const storeRef = firebase.storage().ref(file.name);
-            storeRef.put(file).then(snapshot => this.setState({url: snapshot.downloadURL, fileLoading: false}));
+            if(this.state.dataSource === "firebase"){
+                this.setState({fileLoading: true});
+                const storeRef = firebase.storage().ref(file.name);
+                storeRef.put(file).then(snapshot => this.setState({url: snapshot.downloadURL, fileLoading: false}));
+            }else{
+                var files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
+                var reader = new FileReader();
+                reader.onload = function(e){
+                    var img = new Image();
+                    img.src = reader.result;
+                    files.push({
+                        name: file.name,
+                        file: reader.result
+                    })
+                    localStorage.files = JSON.stringify(files);
+                }
+                reader.readAsDataURL(file);
+            }            
         }
     }
 
@@ -44,6 +61,14 @@ class CreateNote extends React.Component{
             this.setState({validation: {isValid: false, reasons: reasons}});
             return false;
         }else{
+            var reasons = this.state.validation.reasons;
+            reasons = reasons.filter(r => r.name !== "file");
+            this.setState({
+                validation: {
+                    isValid: true,
+                    reasons: reasons
+                }
+            }, () => this.validateForm())
             return true;
         }
     }
@@ -56,12 +81,28 @@ class CreateNote extends React.Component{
             url: this.state.url
         }
         if(this.state.id){
-            const notesRef = firebase.database().ref('notes').child(this.state.id).update(note);
+            if(this.state.dataSource == 'firebase'){
+                const notesRef = firebase.database().ref('notes').child(this.state.id).update(note);
+            }else{
+                var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+                notes = notes.filter(n => n.id !== this.state.id);
+                note.id = this.state.id;
+                notes.push(note);
+                localStorage.setItem("notes", JSON.stringify(notes));
+            }
         }else{
-            const notesRef = firebase.database().ref('notes');
-            notesRef.push(note);
+            if(this.state.dataSource == 'firebase'){
+                const notesRef = firebase.database().ref('notes');
+                notesRef.push(note);
+            }else{
+                var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+                note.id = new Date().getTime();
+                notes.push(note);
+                localStorage.setItem("notes", JSON.stringify(notes));
+            }
         }
         this.setDefaults();
+        this.props.clearCurrent(null);
     }
 
     handleClearForm(){
@@ -120,7 +161,7 @@ class CreateNote extends React.Component{
     }
 
     componentDidMount(){
-        this.validateForm();
+        this.setState({dataSource: this.props.source}, () => this.validateForm());
     }
 
     componentWillReceiveProps(props){
@@ -134,6 +175,9 @@ class CreateNote extends React.Component{
                 url: note.url
             }, () => this.validateForm())
         }
+        if(props.source){
+            this.setState({dataSource: props.source}, () => this.validateForm());
+        }        
     }
     render(){
         return (<div>            

@@ -9,36 +9,42 @@ class Comments extends React.Component{
         this.state = {
             comments: [],
             show: false,
-            noteId: null
+            noteId: null,
+            dataSource: ''
         }
     }
 
     fetch(){
-        const commentsRef = firebase.database().ref('comments');
-        commentsRef.on('value', (snapshot) => {
-            let comments = snapshot.val();
-            let newState = [];
-            for(let comment in comments){
-                if(comments[comment].noteId === this.state.noteId)
-                    newState.push({
-                        id: comment,
-                        author: comments[comment].author,
-                        content: comments[comment].content,
-                        noteId: comments[comment].noteId,
-                        createdAt: comments[comment].createdAt
-                    })
-            }
-            this.setState({comments: newState});
-        })
+        if(this.state.dataSource === "firebase"){
+            const commentsRef = firebase.database().ref('comments');
+            commentsRef.on('value', (snapshot) => {
+                let comments = snapshot.val();
+                let newState = [];
+                for(let comment in comments){
+                    if(comments[comment].noteId === this.state.noteId)
+                        newState.push({
+                            id: comment,
+                            author: comments[comment].author,
+                            content: comments[comment].content,
+                            noteId: comments[comment].noteId,
+                            createdAt: comments[comment].createdAt
+                        })
+                }
+                this.setState({comments: newState});
+            })
+        }else{
+            var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
+            comments = comments.filter(com => com.noteId == this.state.noteId);
+            this.setState({comments: comments});
+        }
     }
 
     componentDidMount(){
-        this.setState({noteId: this.props.noteId});
+        this.setState({noteId: this.props.noteId, dataSource: this.props.source});
     }
 
     componentWillReceiveProps(props){
-        this.setState({show: props.show});
-        this.fetch();
+        this.setState({show: props.show, noteId: this.props.noteId, dataSource: props.source}, () => this.fetch());
     }
 
     renderComment(comment){
@@ -55,7 +61,7 @@ class Comments extends React.Component{
         var commentsList = (comments)? <ul>{comments}</ul> : null;
         return <div className="comments-display">
             {commentsList}
-            <CreateComment noteId={this.state.noteId} />
+            <CreateComment noteId={this.state.noteId} source={this.state.dataSource} refresh={this.props.refresh} />
         </div>
     }
 }

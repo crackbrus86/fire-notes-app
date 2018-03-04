@@ -9,58 +9,88 @@ class Notes extends React.Component{
         this.state = {
             notes: [],
             showComments: [],
-            comments: []
+            comments: [],
+            dataSource: ""
         }
     }
 
     handleRemove(noteId){   
         if(window.confirm("Are you sure you want to delete this note?")){
-            const noteRef = firebase.database().ref(`/notes/${noteId}`);
-            noteRef.remove();
+            if(this.state.dataSource === "firebase"){
+                const noteRef = firebase.database().ref(`/notes/${noteId}`);
+                noteRef.remove();
+            }else{
+                var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+                notes = notes.filter(n => n.id !== noteId);
+                localStorage.setItem("notes", JSON.stringify(notes));
+                this.fetch();
+            }
         } 
     }
 
     fetch(){
-        const notesRef = firebase.database().ref('notes');
-        notesRef.on('value', (snapshot) => {
-            let notes = snapshot.val();
-            let newState = [];
-            for(let note in notes){
-                newState.push({
-                    id: note,
-                    name: notes[note].name,
-                    content: notes[note].content,
-                    fileName: notes[note].fileName,
-                    url: notes[note].url
-                });
-            }
-            this.setState({notes: newState});
-        })
-
-        const commentsRef = firebase.database().ref('comments');
-        commentsRef.on('value', (snapshot) => {
-            let comments = snapshot.val();
-            let newState = [];
-            for(let comment in comments){
+        if(this.state.dataSource === "firebase"){
+            const notesRef = firebase.database().ref('notes');
+            notesRef.on('value', (snapshot) => {
+                let notes = snapshot.val();
+                let newState = [];
+                for(let note in notes){
                     newState.push({
-                        id: comment,
-                        author: comments[comment].author,
-                        content: comments[comment].content,
-                        noteId: comments[comment].noteId,
-                        createdAt: comments[comment].createdAt
-                    })
-            }
-            this.setState({comments: newState});
-        })        
+                        id: note,
+                        name: notes[note].name,
+                        content: notes[note].content,
+                        fileName: notes[note].fileName,
+                        url: notes[note].url
+                    });
+                }
+                this.setState({notes: newState});
+            })
+    
+            const commentsRef = firebase.database().ref('comments');
+            commentsRef.on('value', (snapshot) => {
+                let comments = snapshot.val();
+                let newState = [];
+                for(let comment in comments){
+                        newState.push({
+                            id: comment,
+                            author: comments[comment].author,
+                            content: comments[comment].content,
+                            noteId: comments[comment].noteId,
+                            createdAt: comments[comment].createdAt
+                        })
+                }
+                this.setState({comments: newState});
+            }) 
+        }else{
+            this.fetchLocalStorage();
+        }       
+    }
+
+    fetchLocalStorage(){
+        var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+        var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
+        this.setState({notes: notes, comments: comments});
     }
 
     getImage(url, name){
-        if(!url) return '';
-        return <img className="card-img-top"  src={url} alt={name}/>
+        if(this.state.dataSource == "firebase"){
+            if(!url) return '';
+            return <img className="card-img-top"  src={url} alt={name}/>
+        }else{
+            var files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
+            if(!files.length) return null;
+            var file = _.find(files, f => f.name === name);
+            if(!file) return null;
+            return <img className="card-img-top"  src={file.file} alt={name}/>
+        }
     }
 
     componentDidMount(){
-        this.fetch();
+        this.setState({dataSource: this.props.source}, () => this.fetch());
+    }
+
+    componentWillReceiveProps(props){
+        this.setState({dataSource: props.source}, () => this.fetch());
     }
 
     handleShowComments(id){
@@ -73,6 +103,14 @@ class Notes extends React.Component{
         var showing = this.state.showComments;
         showing = showing.filter(item => item != id);
         this.setState({showComments: showing});
+    }
+
+    refresh(){
+        if(this.state.dataSource != "firebase"){
+            var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
+            this.setState({comments: comments});
+            this.forceUpdate();
+        }        
     }
 
     renderNoteTemplate(note, index){
@@ -96,7 +134,7 @@ class Notes extends React.Component{
                     </div>
                 </div>
             </div>
-            <Comments noteId={note.id} show={contains}/>
+            <Comments noteId={note.id} show={contains} source={this.state.dataSource} refresh={this.refresh.bind(this)} />
         </div>
     }
 
