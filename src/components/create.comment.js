@@ -98,7 +98,7 @@ class CreateComment extends React.Component{
         var element = document.getElementById(name + this.state.noteId);
         if(error){            
             element.classList.add("invalid");
-            return <span style={{color: 'red', fontSize: '0.8em'}}>{error.reason}</span>;
+            return <span className="validation-message">{error.reason}</span>;
         }else{
             if(element) element.classList.remove("invalid");
         }
@@ -111,16 +111,23 @@ class CreateComment extends React.Component{
             noteId: this.state.noteId,
             createdAt: moment(new Date()).format("DD-MM-YYYY HH:mm:ss")
         }
-        if(this.state.dataSource === "firebase"){
-            const commentRef = firebase.database().ref('comments');
-            commentRef.push(comment);
-        }else{
-            var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
-            comments.push(comment);
-            localStorage.setItem("comments", JSON.stringify(comments));
-            this.props.refresh();
-        }
+        if(this.state.dataSource === "firebase")
+            this.createInFirebase(comment);
+        else
+            this.createInLocalStorage(comment);
         this.setDefaults();
+    }
+
+    createInFirebase(comment){
+        const commentRef = firebase.database().ref('comments');
+        commentRef.push(comment);
+    }
+
+    createInLocalStorage(comment){
+        var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
+        comments.push(comment);
+        localStorage.setItem("comments", JSON.stringify(comments));
+        this.props.refresh();
     }
 
     render(){

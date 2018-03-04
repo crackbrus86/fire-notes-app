@@ -16,73 +16,105 @@ class Notes extends React.Component{
 
     handleRemove(noteId){   
         if(window.confirm("Are you sure you want to delete this note?")){
-            if(this.state.dataSource === "firebase"){
-                const noteRef = firebase.database().ref(`/notes/${noteId}`);
-                noteRef.remove();
-            }else{
-                var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
-                notes = notes.filter(n => n.id !== noteId);
-                localStorage.setItem("notes", JSON.stringify(notes));
-                this.fetch();
-            }
+            if(this.state.dataSource === "firebase")
+                this.removeInFireBase(noteId);
+            else
+                this.removeInLocalStorage(noteId);
         } 
     }
 
+    removeInFireBase(noteId){
+        const noteRef = firebase.database().ref(`/notes/${noteId}`);
+        noteRef.remove(); 
+    }
+
+    removeInLocalStorage(noteId){
+        var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+        notes = notes.filter(n => n.id !== noteId);
+        localStorage.setItem("notes", JSON.stringify(notes));
+        this.fetch();
+    }
+
     fetch(){
-        if(this.state.dataSource === "firebase"){
-            const notesRef = firebase.database().ref('notes');
-            notesRef.on('value', (snapshot) => {
-                let notes = snapshot.val();
-                let newState = [];
-                for(let note in notes){
+        if(this.state.dataSource === "firebase")   
+            this.fetchInFirebase();
+        else
+            this.fetchLocalStorage();      
+    }
+
+    fetchInFirebase(){
+        this.fetchNotesInFirebase();
+        this.fetchCommentsInFirebase();
+    }
+
+    fetchNotesInFirebase(){
+        const notesRef = firebase.database().ref('notes');
+        notesRef.on('value', (snapshot) => {
+            let notes = snapshot.val();
+            let newState = [];
+            for(let note in notes){
+                newState.push({
+                    id: note,
+                    name: notes[note].name,
+                    content: notes[note].content,
+                    fileName: notes[note].fileName,
+                    url: notes[note].url
+                });
+            }
+            this.setState({notes: newState});
+        })
+    }
+
+    fetchCommentsInFirebase(){
+        const commentsRef = firebase.database().ref('comments');
+        commentsRef.on('value', (snapshot) => {
+            let comments = snapshot.val();
+            let newState = [];
+            for(let comment in comments){
                     newState.push({
-                        id: note,
-                        name: notes[note].name,
-                        content: notes[note].content,
-                        fileName: notes[note].fileName,
-                        url: notes[note].url
-                    });
-                }
-                this.setState({notes: newState});
-            })
-    
-            const commentsRef = firebase.database().ref('comments');
-            commentsRef.on('value', (snapshot) => {
-                let comments = snapshot.val();
-                let newState = [];
-                for(let comment in comments){
-                        newState.push({
-                            id: comment,
-                            author: comments[comment].author,
-                            content: comments[comment].content,
-                            noteId: comments[comment].noteId,
-                            createdAt: comments[comment].createdAt
-                        })
-                }
-                this.setState({comments: newState});
-            }) 
-        }else{
-            this.fetchLocalStorage();
-        }       
+                        id: comment,
+                        author: comments[comment].author,
+                        content: comments[comment].content,
+                        noteId: comments[comment].noteId,
+                        createdAt: comments[comment].createdAt
+                    })
+            }
+            this.setState({comments: newState});
+        }) 
     }
 
     fetchLocalStorage(){
+        this.fetchNotesInLocalStorage();
+        this.fetchCommentsInLocalStorage();
+    }
+
+    fetchNotesInLocalStorage(){
         var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+        this.setState({notes: notes});
+    }
+
+    fetchCommentsInLocalStorage(){
         var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
-        this.setState({notes: notes, comments: comments});
+        this.setState({comments: comments});
     }
 
     getImage(url, name){
-        if(this.state.dataSource == "firebase"){
-            if(!url) return '';
-            return <img className="card-img-top"  src={url} alt={name}/>
-        }else{
-            var files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
-            if(!files.length) return null;
-            var file = _.find(files, f => f.name === name);
-            if(!file) return null;
-            return <img className="card-img-top"  src={file.file} alt={name}/>
-        }
+        return (this.state.dataSource == "firebase")?
+            this.renderImageFirebase(url, name) :
+            this.renderImageLocalStorage(name);
+    }
+
+    renderImageFirebase(url, name){
+        if(!url) return '';
+        return <img className="card-img-top"  src={url} alt={name}/>
+    }
+
+    renderImageLocalStorage(name){
+        var files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
+        if(!files.length) return null;
+        var file = _.find(files, f => f.name === name);
+        if(!file) return null;
+        return <img className="card-img-top"  src={file.file} alt={name}/>
     }
 
     componentDidMount(){
@@ -107,8 +139,7 @@ class Notes extends React.Component{
 
     refresh(){
         if(this.state.dataSource != "firebase"){
-            var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
-            this.setState({comments: comments});
+            this.fetchCommentsInLocalStorage();
             this.forceUpdate();
         }        
     }

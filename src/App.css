@@ -81,3 +81,7 @@
         .app .display-notes .note-template .comments-display .add-comment form .form-group label {
           font-size: 0.9em;
           line-height: 0.9em; }
+
+.app .validation-message {
+  color: red;
+  font-size: 0.8em; }

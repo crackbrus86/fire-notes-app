@@ -33,25 +33,32 @@ class CreateNote extends React.Component{
         var file = e.target.files[0];
         this.setState({fileName: file.name});
         if(this.validateFile(file)){
-            if(this.state.dataSource === "firebase"){
-                this.setState({fileLoading: true});
-                const storeRef = firebase.storage().ref(file.name);
-                storeRef.put(file).then(snapshot => this.setState({url: snapshot.downloadURL, fileLoading: false}));
-            }else{
-                var files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
-                var reader = new FileReader();
-                reader.onload = function(e){
-                    var img = new Image();
-                    img.src = reader.result;
-                    files.push({
-                        name: file.name,
-                        file: reader.result
-                    })
-                    localStorage.files = JSON.stringify(files);
-                }
-                reader.readAsDataURL(file);
-            }            
+            if(this.state.dataSource === "firebase")
+                this.loadToFirebase(file);
+            else
+                this.loadToLocalStorage(file);      
         }
+    }
+
+    loadToFirebase(file){
+        this.setState({fileLoading: true});
+        const storeRef = firebase.storage().ref(file.name);
+        storeRef.put(file).then(snapshot => this.setState({url: snapshot.downloadURL, fileLoading: false}));
+    }
+
+    loadToLocalStorage(file){
+        var files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
+        var reader = new FileReader();
+        reader.onload = function(e){
+            var img = new Image();
+            img.src = reader.result;
+            files.push({
+                name: file.name,
+                file: reader.result
+            })
+            localStorage.files = JSON.stringify(files);
+        }
+        reader.readAsDataURL(file);
     }
 
     validateFile(file){
@@ -81,28 +88,42 @@ class CreateNote extends React.Component{
             url: this.state.url
         }
         if(this.state.id){
-            if(this.state.dataSource == 'firebase'){
-                const notesRef = firebase.database().ref('notes').child(this.state.id).update(note);
-            }else{
-                var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
-                notes = notes.filter(n => n.id !== this.state.id);
-                note.id = this.state.id;
-                notes.push(note);
-                localStorage.setItem("notes", JSON.stringify(notes));
-            }
+            if(this.state.dataSource == 'firebase')
+                this.updateInFirebase(note);
+            else
+                this.updateInLocalStorage(note);
         }else{
-            if(this.state.dataSource == 'firebase'){
-                const notesRef = firebase.database().ref('notes');
-                notesRef.push(note);
-            }else{
-                var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
-                note.id = new Date().getTime();
-                notes.push(note);
-                localStorage.setItem("notes", JSON.stringify(notes));
-            }
+            if(this.state.dataSource == 'firebase')
+                this.createInFirebase(note);
+            else
+                this.createInLocalStorage(note);
         }
         this.setDefaults();
         this.props.clearCurrent(null);
+    }
+
+    updateInFirebase(note){
+        const notesRef = firebase.database().ref('notes').child(this.state.id).update(note);
+    }
+
+    updateInLocalStorage(note){
+        var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+        notes = notes.filter(n => n.id !== this.state.id);
+        note.id = this.state.id;
+        notes.push(note);
+        localStorage.setItem("notes", JSON.stringify(notes));
+    }
+
+    createInFirebase(note){
+        const notesRef = firebase.database().ref('notes');
+        notesRef.push(note);
+    }
+
+    createInLocalStorage(note){
+        var notes = (localStorage.getItem("notes"))? JSON.parse(localStorage.getItem("notes")) : [];
+        note.id = new Date().getTime();
+        notes.push(note);
+        localStorage.setItem("notes", JSON.stringify(notes));
     }
 
     handleClearForm(){
@@ -154,7 +175,7 @@ class CreateNote extends React.Component{
         var element = document.getElementById(name);
         if(error){            
             element.classList.add("invalid");
-            return <span style={{color: 'red', fontSize: '0.8em'}}>{error.reason}</span>;
+            return <span className="validation-message">{error.reason}</span>;
         }else{
             if(element) element.classList.remove("invalid");
         }

@@ -15,28 +15,35 @@ class Comments extends React.Component{
     }
 
     fetch(){
-        if(this.state.dataSource === "firebase"){
-            const commentsRef = firebase.database().ref('comments');
-            commentsRef.on('value', (snapshot) => {
-                let comments = snapshot.val();
-                let newState = [];
-                for(let comment in comments){
-                    if(comments[comment].noteId === this.state.noteId)
-                        newState.push({
-                            id: comment,
-                            author: comments[comment].author,
-                            content: comments[comment].content,
-                            noteId: comments[comment].noteId,
-                            createdAt: comments[comment].createdAt
-                        })
-                }
-                this.setState({comments: newState});
-            })
-        }else{
-            var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
-            comments = comments.filter(com => com.noteId == this.state.noteId);
-            this.setState({comments: comments});
-        }
+        if(this.state.dataSource === "firebase")
+            this.fetchInFirebase();
+        else
+            this.fetchInLocalStorage();
+    }
+
+    fetchInFirebase(){
+        const commentsRef = firebase.database().ref('comments');
+        commentsRef.on('value', (snapshot) => {
+            let comments = snapshot.val();
+            let newState = [];
+            for(let comment in comments){
+                if(comments[comment].noteId === this.state.noteId)
+                    newState.push({
+                        id: comment,
+                        author: comments[comment].author,
+                        content: comments[comment].content,
+                        noteId: comments[comment].noteId,
+                        createdAt: comments[comment].createdAt
+                    })
+            }
+            this.setState({comments: newState});
+        })
+    }
+
+    fetchInLocalStorage(){
+        var comments = (localStorage.getItem("comments"))? JSON.parse(localStorage.getItem("comments")) : [];
+        comments = comments.filter(com => com.noteId == this.state.noteId);
+        this.setState({comments: comments});
     }
 
     componentDidMount(){
