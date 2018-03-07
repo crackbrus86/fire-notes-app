@@ -2,6 +2,8 @@ import React from "react";
 import firebase from "firebase";
 import Comments from "./comments";
 import * as _ from "underscore";
+import FirebaseeStorage from "../store/firebase.storage";
+import LocalStorage from "../store/local.storage";
 
 class Notes extends React.Component{
     constructor(){
@@ -12,6 +14,11 @@ class Notes extends React.Component{
             comments: [],
             dataSource: ""
         }
+        storage: null
+    }
+
+    createStorage(props){
+        this.storage = (props.source === 'firebase')?  new FirebaseeStorage() : new LocalStorage();
     }
 
     handleRemove(noteId){   
@@ -118,11 +125,15 @@ class Notes extends React.Component{
     }
 
     componentDidMount(){
-        this.setState({dataSource: this.props.source}, () => this.fetch());
+        this.createStorage(this.props);
+        this.storage.fetch('notes').then(response => this.setState({notes: response}));
+        this.storage.fetch('comments').then(response => this.setState({comments: response}));
     }
 
     componentWillReceiveProps(props){
-        this.setState({dataSource: props.source}, () => this.fetch());
+        this.createStorage(props);
+        this.storage.fetch('notes').then(response => this.setState({notes: response}));
+        this.storage.fetch('comments').then(response => this.setState({comments: response}));
     }
 
     handleShowComments(id){
