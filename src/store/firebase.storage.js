@@ -1,6 +1,7 @@
 import firebase from "firebase";
 import Note from "../models/note";
 import Comment from "../models/comment";
+import {CardImage} from "../components/template.components";
 
 class FirebaseStorage{
 
@@ -28,7 +29,7 @@ class FirebaseStorage{
     }
 
     update = (type, itemId, data) => {
-        const notesRef = firebase.database().ref(type).child(itemId).update(data);
+        firebase.database().ref(type).child(itemId).update(data);
     }
 
     delete = (type, itemId) => {
@@ -39,6 +40,10 @@ class FirebaseStorage{
     saveFile = (file) => {
         const storeRef = firebase.storage().ref(file.name);
         storeRef.put(file);
+    }
+
+    getImage = (name, url = null) => {
+        return CardImage({url, name});
     }
 }
 export default FirebaseStorage;

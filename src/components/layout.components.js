@@ -22,3 +22,9 @@ export const Section = (props) => {
         {props.children}
     </section>
 }
+
+export const FormGroup = (props) => {
+    return <div className={classnames('form-group', props.className)}>
+        {props.children}
+    </div>
+}

@@ -1,5 +1,4 @@
-import Note from "../models/note";
-import Comment from "../models/comment";
+import {CardImage} from "../components/template.components";
 
 class LocalStorage{
 
@@ -47,6 +46,13 @@ class LocalStorage{
             localStorage.files = JSON.stringify(files);
         }
         reader.readAsDataURL(file);
+    }
+
+    getImage = (name, url = null) => {
+        let files = (localStorage.getItem("files"))? JSON.parse(localStorage.getItem("files")) : [];
+        let file = files.find(f => f.name === name);
+        if(!file) return null;
+        return CardImage({url: file.file, name: name});
     }
 }
 export default LocalStorage;

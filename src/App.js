@@ -1,22 +1,44 @@
 import React from 'react';
 import {Settings} from "./components/settings";
 import {Title, Header, AppContent, Section} from "./components/layout.components";
-import {ProviderStore} from "./store/store";
+import { Store } from "./store/store";
 import CreateNote from "./components/create.note";
-import Notes from "./components/notes";
+import { Notes } from "./views/notes.view";
 import "./App.css";
 
 class App extends React.Component {
   constructor(){
     super();
-    ProviderStore.onChange(this.forceUpdate.bind(this));
+    Store.onChange(() => this.changeProvider());
     this.state = {
-      dataSource: 'firebase',
-      currentNote: null
+      notes: [],
+      comments: [],
+      shownComments: [],
+      storage: Store.createStorage()
     }
-    this.handleEditNote = (note) => {
-      this.setState({currentNote: note})
+    this.showComments = (id) => { 
+        let shown = this.state.shownComments;
+        shown.push(id);
+        this.setState({showComments: shown});
+    };
+    this.hideComments = (id) => {
+        let shown = this.state.shownComments;
+        shown = shown.filter(c => c !== id);
+        this.setState({shownComments: shown});
     }
+  }
+
+  changeProvider(){
+    this.setState({storage: Store.createStorage()}, () => this.fetchAll());
+  }
+
+  fetchAll(){
+    this.state.storage.fetch('notes').then(data => this.setState({notes: data}));
+    this.state.storage.fetch('comments').then(data => this.setState({comments: data}));
+  }
+
+  componentDidMount(){
+    this.fetchAll();
   }
 
   render() {
@@ -24,14 +46,20 @@ class App extends React.Component {
       <div className="container app">
         <Header>
           <Title text="Fire Notes" />
-          <Settings value={ProviderStore.get()} onChange={ProviderStore.set.bind(ProviderStore)}   />
+          <Settings provider={Store.get()} onChange={Store.set.bind(Store)}   />
         </Header>
         <AppContent>
           <Section className="display-notes">
-            <Notes onEdit={this.handleEditNote} source={ProviderStore.get()} current={this.state.currentNote} />
+            <Notes notes={this.state.notes} comments={this.state.comments} 
+            shown={this.state.shownComments}
+            actions={{
+              getImage: this.state.storage.getImage,
+              showComments: this.showComments,
+              hideComments: this.hideComments
+            }} />
           </Section>
           <Section className="add-notes">
-            <CreateNote current={this.state.currentNote} source={ProviderStore.get()} clearCurrent={this.handleEditNote} />
+            {/* <CreateNote current={this.state.currentNote} source={Store.get()} clearCurrent={this.handleEditNote} /> */}
           </Section>
         </AppContent>
       </div>
