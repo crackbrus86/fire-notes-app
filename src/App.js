@@ -2,8 +2,9 @@ import React from 'react';
 import {Settings} from "./components/settings";
 import {Title, Header, AppContent, Section} from "./components/layout.components";
 import { Store } from "./store/store";
-import CreateNote from "./components/create.note";
+import firebase from "./firebase";
 import { Notes } from "./views/notes.view";
+import NoteForm from "./views/note.form.view";
 import "./App.css";
 
 class App extends React.Component {
@@ -14,6 +15,13 @@ class App extends React.Component {
       notes: [],
       comments: [],
       shownComments: [],
+      note: {
+          id: null,
+          name: '',
+          content: '',
+          fileName: '',
+          url: ''
+      },
       storage: Store.createStorage()
     }
     this.showComments = (id) => { 
@@ -59,7 +67,7 @@ class App extends React.Component {
             }} />
           </Section>
           <Section className="add-notes">
-            {/* <CreateNote current={this.state.currentNote} source={Store.get()} clearCurrent={this.handleEditNote} /> */}
+            <NoteForm note={this.state.note} />
           </Section>
         </AppContent>
       </div>
