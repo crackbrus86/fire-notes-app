@@ -24,6 +24,15 @@ class App extends React.Component {
       },
       storage: Store.createStorage()
     }
+    this.editNote = (note) => {
+      this.setState({note: note}, () => this.forceUpdate.bind(this));
+    }
+    this.changeNote = (e) => {
+      this.setState({note: {
+        ...this.state.note,
+        [e.target.name]: e.target.value
+      }})
+    }
     this.showComments = (id) => { 
         let shown = this.state.shownComments;
         shown.push(id);
@@ -33,7 +42,36 @@ class App extends React.Component {
         let shown = this.state.shownComments;
         shown = shown.filter(c => c !== id);
         this.setState({shownComments: shown});
-    }
+    };
+    this.saveFile = (file) => {
+      this.state.storage.saveFile(file).then(data => {
+          this.setState({note: {
+            ...this.state.note,
+            fileName: file.name,
+            url: data.url
+          }})
+      })
+    };
+    this.resetNote = () => {
+      this.setState({note: {
+        id: null,
+        fileName: '',
+        url: '',
+        name: '',
+        content: ''
+      }})
+    };
+    this.saveNote = (note) => {
+      if(!note.id)
+        this.state.storage.create('notes', note).then(() => this.fetchAll());
+      else
+        this.state.storage.update('notes', note.id ,note).then(() => this.fetchAll());
+    };
+    this.deleteNote = (noteId) => {
+      if(window.confirm("Are you sure you want to delete this note?")){
+        this.state.storage.delete("notes", noteId).then(() => this.fetchAll());
+      }
+    };
   }
 
   changeProvider(){
@@ -63,11 +101,18 @@ class App extends React.Component {
             actions={{
               getImage: this.state.storage.getImage,
               showComments: this.showComments,
-              hideComments: this.hideComments
+              hideComments: this.hideComments,
+              editNote: this.editNote,
+              deleteNote: this.deleteNote
             }} />
           </Section>
           <Section className="add-notes">
-            <NoteForm note={this.state.note} />
+            <NoteForm note={this.state.note} actions={{
+              saveFile: this.saveFile,
+              resetNote: this.resetNote,
+              saveNote: this.saveNote,
+              changeNote: this.changeNote
+            }} />
           </Section>
         </AppContent>
       </div>

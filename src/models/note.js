@@ -8,7 +8,10 @@ class Note{
     }
 
     setProps(propsArr){
-        [this.content, this.fileName, this.name, this.url] = Object.values(propsArr);
+        this.content = propsArr.content;
+        this.fileName = propsArr.fileName;
+        this.name = propsArr.name;
+        this.url = propsArr.url;
     }
 }
 export default Note;

@@ -8,7 +8,10 @@ class Comment{
     }
 
     setProps(propsArr){
-        [this.author, this.content, this.createdAt, this.noteId] = Object.values(propsArr);
+        this.author = propsArr.author;
+        this.content = propsArr.content;
+        this.createdAt = propsArr.createdAt;
+        this.noteId = propsArr.noteId;
     }
 }
 export default Comment;

@@ -63,8 +63,8 @@ export const CardTemplate = (props) => {
                 <div className="card-block">
                     <h4 className="card-title">{note.name}</h4>
                     <p className="card-text">{note.content}</p>
-                    <button className="btn btn-primary">Edit</button>
-                    <button className="btn btn-danger">Delete</button>
+                    <button className="btn btn-primary" onClick={() => actions.editNote(note)}>Edit</button>
+                    <button className="btn btn-danger" onClick={() => actions.deleteNote(note.id)}>Delete</button>
                     <div className="row comments-info">
                         <div className="col-sm-8">
                         <button type="button" className="btn btn-link" onClick={() => actions.showComments(note.id)}>{commentsCount} comments</button>

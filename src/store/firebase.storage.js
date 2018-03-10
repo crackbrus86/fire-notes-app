@@ -22,24 +22,35 @@ class FirebaseStorage{
     }
 
     create = (type, data) => {
-        let res = (type === 'notes')? new Note() : new Comment();
-        res.setProps(data);
-        const typeRef = firebase.database().ref(type);
-        typeRef.push(res);
+        return new Promise((resolve, reject) => {
+            let res = (type === 'notes')? new Note() : new Comment();
+            res.setProps(data);
+            const typeRef = firebase.database().ref(type);
+            typeRef.push(res);
+            resolve();
+        })
     }
 
     update = (type, itemId, data) => {
-        firebase.database().ref(type).child(itemId).update(data);
+        return new Promise((resolve, reject) => {
+            firebase.database().ref(type).child(itemId).update(data);
+            resolve();
+        })
     }
 
     delete = (type, itemId) => {
-        const noteRef = firebase.database().ref(`/${type}/${itemId}`);
-        noteRef.remove(); 
+        return new Promise((resolve, reject) => {
+            const noteRef = firebase.database().ref(`/${type}/${itemId}`);
+            noteRef.remove(); 
+            resolve();
+        })
     }
 
     saveFile = (file) => {
-        const storeRef = firebase.storage().ref(file.name);
-        storeRef.put(file);
+        return new Promise((resolve, reject) => {
+            const storeRef = firebase.storage().ref(file.name);
+            storeRef.put(file).then(snapshot => resolve({fileName: file.name, url: snapshot.downloadURL}));
+        })
     }
 
     getImage = (name, url = null) => {
