@@ -8,7 +8,7 @@ class NoteForm extends React.Component{
     constructor(props){
         super(props);
         this._handleFileChange = (e) => {
-            if(!e.target.files) return;
+            if(!e.target.files.length) return;
             var file = e.target.files[0];
             if(file.size > 2097152){
                 alert("WARNING! Max file size (2 MB) is exceeded.");
@@ -67,7 +67,7 @@ class NoteForm extends React.Component{
                         <FormGroup>
                             <label>Content:</label>
                             {errors.content && touched.content && (<div className="validation-message">{errors.content}</div>)}
-                            <Field value={values.content} name="content" component="textarea" className="form-control" onChange={handleChange} />
+                            <Field value={values.content} name="content" component="textarea" className="form-control" onChange={handleChange}  onBlur={e => this.props.actions.changeNote(e)} />
                         </FormGroup>
                         <FormGroup>
                             <label>File:</label>
@@ -83,7 +83,8 @@ class NoteForm extends React.Component{
 }
 export default NoteForm
 NoteForm.propTypes = {
-    note: PropTypes.object
+    note: PropTypes.object,
+    actions: PropTypes.object
 }
 NoteForm.defaultProps = {
     note: {

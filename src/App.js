@@ -72,6 +72,9 @@ class App extends React.Component {
         this.state.storage.delete("notes", noteId).then(() => this.fetchAll());
       }
     };
+    this.addComment = (comment) => {
+      this.state.storage.create('comments', comment).then(() => this.fetchAll());
+    }
   }
 
   changeProvider(){
@@ -103,7 +106,8 @@ class App extends React.Component {
               showComments: this.showComments,
               hideComments: this.hideComments,
               editNote: this.editNote,
-              deleteNote: this.deleteNote
+              deleteNote: this.deleteNote,
+              addComment: this.addComment
             }} />
           </Section>
           <Section className="add-notes">
