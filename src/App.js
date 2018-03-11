@@ -1,47 +1,124 @@
-import React, { Component } from 'react';
+import React from 'react';
 import {Settings} from "./components/settings";
-import CreateNote from "./components/create.note";
-import Notes from "./components/notes";
+import {Title, Header, AppContent, Section} from "./components/layout.components";
+import { Store } from "./store/store";
+import firebase from "./firebase";
+import { Notes } from "./views/notes.view";
+import NoteForm from "./views/note.form.view";
 import "./App.css";
 
-class App extends Component {
+class App extends React.Component {
   constructor(){
     super();
+    Store.onChange(() => this.changeProvider());
     this.state = {
-      dataSource: 'firebase',
-      currentNote: null
+      notes: [],
+      comments: [],
+      shownComments: [],
+      note: {
+          id: null,
+          name: '',
+          content: '',
+          fileName: '',
+          url: ''
+      },
+      storage: Store.createStorage()
     }
-    this.handleDataSource = this.handleDataSource.bind(this);
-    this.handleEditNote = this.handleEditNote.bind(this);
+    this.editNote = (note) => {
+      this.setState({note: note}, () => this.forceUpdate.bind(this));
+    }
+    this.changeNote = (e) => {
+      this.setState({note: {
+        ...this.state.note,
+        [e.target.name]: e.target.value
+      }})
+    }
+    this.showComments = (id) => { 
+        let shown = this.state.shownComments;
+        shown.push(id);
+        this.setState({showComments: shown});
+    };
+    this.hideComments = (id) => {
+        let shown = this.state.shownComments;
+        shown = shown.filter(c => c !== id);
+        this.setState({shownComments: shown});
+    };
+    this.saveFile = (file) => {
+      this.state.storage.saveFile(file).then(data => {
+          this.setState({note: {
+            ...this.state.note,
+            fileName: file.name,
+            url: data.url
+          }})
+      })
+    };
+    this.resetNote = () => {
+      this.setState({note: {
+        id: null,
+        fileName: '',
+        url: '',
+        name: '',
+        content: ''
+      }})
+    };
+    this.saveNote = (note) => {
+      if(!note.id)
+        this.state.storage.create('notes', note).then(() => this.fetchAll());
+      else
+        this.state.storage.update('notes', note.id ,note).then(() => this.fetchAll());
+    };
+    this.deleteNote = (noteId) => {
+      if(window.confirm("Are you sure you want to delete this note?")){
+        this.state.storage.delete("notes", noteId).then(() => this.fetchAll());
+      }
+    };
+    this.addComment = (comment) => {
+      this.state.storage.create('comments', comment).then(() => this.fetchAll());
+    }
   }
 
-  handleDataSource(sourse){
-    this.setState({dataSource: sourse, currentNote: null});
+  changeProvider(){
+    this.setState({storage: Store.createStorage()}, () => this.fetchAll());
   }
 
-  handleEditNote(note){
-    this.setState({currentNote: note})
+  fetchAll(){
+    this.state.storage.fetch('notes').then(data => this.setState({notes: data}));
+    this.state.storage.fetch('comments').then(data => this.setState({comments: data}));
+  }
+
+  componentDidMount(){
+    this.fetchAll();
   }
 
   render() {
     return (
       <div className="container app">
-        <header className="app-header row justify-content-center">
-          <div className="display-logo col col-md-4">
-            <h1>Fire Notes</h1>
-          </div>
-          <div className="app-settings col col-md-4">
-            <Settings source={this.state.dataSource} selectSource={this.handleDataSource}   />
-          </div>
-        </header>
-        <div className="row  justify-content-center app-content">
-          <section className="display-notes col col-md-4">
-          <Notes onEdit={this.handleEditNote} source={this.state.dataSource} current={this.state.currentNote} />
-          </section>
-          <section className="add-notes col col-md-4">
-            <CreateNote current={this.state.currentNote} source={this.state.dataSource} clearCurrent={this.handleEditNote} />
-          </section>
-        </div>
+        <Header>
+          <Title text="Fire Notes" />
+          <Settings provider={Store.get()} onChange={Store.set.bind(Store)}   />
+        </Header>
+        <AppContent>
+          <Section className="display-notes">
+            <Notes notes={this.state.notes} comments={this.state.comments} 
+            shown={this.state.shownComments}
+            actions={{
+              getImage: this.state.storage.getImage,
+              showComments: this.showComments,
+              hideComments: this.hideComments,
+              editNote: this.editNote,
+              deleteNote: this.deleteNote,
+              addComment: this.addComment
+            }} />
+          </Section>
+          <Section className="add-notes">
+            <NoteForm note={this.state.note} actions={{
+              saveFile: this.saveFile,
+              resetNote: this.resetNote,
+              saveNote: this.saveNote,
+              changeNote: this.changeNote
+            }} />
+          </Section>
+        </AppContent>
       </div>
     );
   }

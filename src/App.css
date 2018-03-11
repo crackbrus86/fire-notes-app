@@ -85,3 +85,6 @@
 .app .validation-message {
   color: red;
   font-size: 0.8em; }
+
+.app .card-image {
+  text-align: center; }

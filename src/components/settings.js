@@ -1,12 +1,41 @@
 import React from "react";
+import PropTypes from "prop-types";
+import {Formik, Form, Field} from "formik";
+import {Section, FormGroup} from "./layout.components";
 
-export const Settings = (props) => {
-    var sources = [{value: 'firebase', name: 'Firebase'}, {value: 'localStorage', name:'Local Storage'}];
-    var options = sources.map((sourse, index) => <option key={index} value={sourse.value}>{sourse.name}</option>)
-    return <div className="form-group">
-            <label>Settings <i className="fab fa-whmcs"></i></label>
-            <select className="form-control" value={props.sourse} onChange={(e) => props.selectSource(e.target.value)}>
-                {options}
-            </select>
-    </div>
+export class Settings extends React.Component {
+    constructor(props){
+        super(props);
+        this._selectProvider = e => {
+            this.props.onChange(e.target.value);
+        }
+    }
+    render(){
+        return <Section>
+            <FormGroup>
+                <Formik
+                    onSubmit = {() => null}
+                    render={() => (
+                        <Form>
+                            <label>Settings <i className="fab fa-whmcs"></i></label>
+                            <Field value={this.props.provider} name="provider" className="form-control" onChange={this._selectProvider} component="select" >
+                                <option value="firebase">Firebase</option>
+                                <option value="localStorage">Local Storage</option>
+                            </Field>
+                        </Form>
+                    )}
+                />
+            </FormGroup>
+        </Section>
+    }
+}
+
+Settings.propTypes = {
+    provider: PropTypes.string,
+    onChange: PropTypes.func
+}
+
+Settings.defaultProps = {
+    provider: "localStorage",
+    onChange: () => null
 }
